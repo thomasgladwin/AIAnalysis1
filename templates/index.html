@@ -15,16 +15,17 @@
         <div style="width: 100%;">
                 <div style="width: 50%; float: left;">
                     <form action="index" method="POST" onsubmit='disableButton()'>
+                        More information on <a href="https://github.com/thomasgladwin/AIAnalysis1">GitHub</a>.
                         <h1>Credentials</h1>
                         INFERENCE_URL: <input type="text" id="INFERENCE_URL" name="INFERENCE_URL" value = "">
                         <br>INFERENCE_KEY: <input type="text" id="INFERENCE_KEY" name="INFERENCE_KEY" value = "">
                         <br>INFERENCE_MODEL_ID: <input type="text" id="INFERENCE_MODEL_ID" name="INFERENCE_MODEL_ID" value = "">
                         <h1>Definitions</h1>
-                        <textarea rows=3 cols=80 name="definitions" style="width: 80%;">Define a code as a concept that appears at multiple points in the text, where it has a similar meaning but possibly different wording; the code is labeled as the abstracted meaning of the text. A code should have a specific valence - use different codes for positive and negative attitudes towards similar concepts."</textarea>
+                        <textarea rows=3 cols=80 name="definitions" style="width: 80%;"></textarea>
                         <h1>Data</h1>
-                        <textarea rows=3 cols=80 name="data" style="width: 80%;">The following text contains interview transcripts. The symbol ### indicates where a new participant transcript begins. The participant identifier is given after the ### symbol. ### Participant 1. I like oranges, but not pears. ### Participant 2. I like apples, but not pears. ### Participant 3. I dislike apples and pears.</textarea>
+                        <textarea rows=3 cols=80 name="data" style="width: 80%;"></textarea>
                         <h1>Query</h1>
-                        <textarea rows=3 cols=80 name="query" style="width: 80%;">What attitudes do the participants express?</textarea>
+                        <textarea rows=3 cols=80 name="query" style="width: 80%;"></textarea>
                         <p><input type="radio" id="Forget" name="Forget" value="valForget">Forget prior conversation</p>
                         <p><button id='btn'>Submit</button></p>
                     </form>
