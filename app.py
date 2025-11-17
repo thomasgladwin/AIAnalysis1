@@ -30,18 +30,20 @@ def index():
             debug_str = debug_str + 'Memory wiped. '
             conversation_memory = []
     if 'query' in request.form:
+        definitions = request.form['definitions']
+        data = request.form['data']
         query = request.form['query']
         if len(query) == 0:
             response = "No query."
         else:
-            definitions =  request.form['definitions']
-            data =  request.form['data']
             response = funcs.query_AI(query, conversation_memory, definitions, data)
             conversation_memory.append({'role': "user", 'content': query})
             conversation_memory.append({'role': "assistant", 'content': response})
             debug_str = debug_str + query + ". "
     else:
         response = "Waiting for query."
+        definitions = ''
+        data = ''
     if verbose0:
         response = "Debug info: " + debug_str + ". " + response
-    return render_template('index.html', response=response)
+    return render_template('index.html', response=response, definitions=definitions, data=data)
