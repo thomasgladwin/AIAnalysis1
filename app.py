@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 conversation_memory = []
 verbose0 = False
-accesslist = ["FelixGrainCycle", "ThomasRedBike", "MoederSchimmelpenninck", "UrvashiTeaSeven"]
+accesslist = ["xxx", "xxx", "xxx", "xxx"]
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -47,3 +47,4 @@ def index():
     if verbose0:
         response = "Debug info: " + debug_str + ". " + response
     return render_template('index.html', response=response, definitions=definitions, data=data)
+
