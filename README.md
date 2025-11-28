@@ -11,5 +11,5 @@ Definitions: Define a code as a concept that appears at multiple points in the t
 
 Data: The following text contains interview transcripts. The symbol ### indicates where a new participant transcript begins. The participant identifier is given after the ### symbol. ### Participant 1. I like oranges, but not pears. ### Participant 2. I like apples, but not pears. ### Participant 3. I dislike apples and pears.
 
-Query: Identify codes for the responses for each participant. Using the codes for analysis, what attitudes do the participants express?
+Query: Identify codes for the responses for each participant. Using the codes for analysis, what attitudes do the participants express? Create a table with a row per participant and a column per code, and set the value of each element to 1 if the participant expressed the code and 0 otherwise.
 
