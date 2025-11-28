@@ -54,8 +54,9 @@ def query_AI(input):
 
 def fThomasAIs(query):
     ThomasContent = ''
-    for iTopic in range(len(BeliefsAndOpinions.topics)):
-        abstr = BeliefsAndOpinions.Abstr[BeliefsAndOpinions.topics[iTopic]]
+    topics = BeliefsAndOpinions.Abstr.keys()
+    for topic in topics:
+        abstr = BeliefsAndOpinions.Abstr[topic]
         input = [
             {"role": "user", "content": "Respond with only a digit from 0 to 10. On a scale from 0 to 9, with 0 being not at all relevant and 9 being extremely relevant, how relevant is the following text to the query, " + query + ": " + abstr}
         ]
@@ -68,7 +69,7 @@ def fThomasAIs(query):
                 score = 9
         except:
             score = 9
-        print(response + " " + str(score))
+        #print(response + " " + str(score))
         if score > 1:
-            ThomasContent += BeliefsAndOpinions.Full[BeliefsAndOpinions.topics[iTopic]]
+            ThomasContent += BeliefsAndOpinions.Full[topic]
     return ThomasContent
