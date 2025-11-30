@@ -3,7 +3,7 @@ Practice project for a gen-AI interface, with interview transcript analysis in m
 
 The files are for a Flash app, running on Heroku here: https://testappai0-e16cf7da4690.herokuapp.com (depending on the version I'm working on - it might require your own API credentials or an access code, or it might just run out of resources at some point). It's mainly designed to use a gen AI model to analyze data like interview transcripts, but it's abstracted into general "definitions", "data", and "queries" components. These components are added to a conversation history with some text added to the prompt to specify what they're to be used for.
 
-It also has an optional "Thomas" mode that does a simplified search over topics, assessing relevance to the query, and then adds detailed information on relevant topics to the context used for the response to the query.
+It also has an optional "Thomas" mode if you want to risk getting my personal opinions.
 
 Example:
 
