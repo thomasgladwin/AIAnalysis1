@@ -20,10 +20,11 @@ def create_input(query, memory0=None, definitions="", data=""):
     ]
     if ThomAIs_on:
         ThomasContent = fThomasAIs(query)
-        input.append({"role": "user",
-                                    "content": "Be aware of the following ideas, findings, references, and arguments; use their style of speaking and argumentation: " + ThomasContent})
-        input.append({"role": "assistant",
-                                "content": "I will use these ideas where relevant, and will follow the style of thinking and argumentation."})
+        if len(ThomasContent) > 0:
+            input.append({"role": "user",
+                                        "content": "Be aware of the following ideas, findings, references, and arguments; use their style of speaking and argumentation: " + ThomasContent})
+            input.append({"role": "assistant",
+                                    "content": "I will use these ideas where relevant, and will follow the style of thinking and argumentation."})
     if len(data) > 0:
         input.append({"role": "user", "content": "Use the following information where relevant when answering questions: " + data})
         input.append({"role": "assistant", "content": "I will check whether this information is relevant and use it if so."})
@@ -56,20 +57,29 @@ def fThomasAIs(query):
     ThomasContent = ''
     topics = BeliefsAndOpinions.Abstr.keys()
     for topic in topics:
-        abstr = BeliefsAndOpinions.Abstr[topic]
-        input = [
-            {"role": "user", "content": "Respond with only a digit from 0 to 10. On a scale from 0 to 9, with 0 being not at all relevant and 9 being extremely relevant, how relevant is the following text to the query, " + query + ": " + abstr}
-        ]
-        response = query_AI(input)
-        try:
-            digits = re.findall(r'\d+', response)
-            if len(digits) > 0:
-                score = int(digits[0])
-            else:
+        ThomasContent += BeliefsAndOpinions.Full[topic]
+        timeToRunThis = False
+        if timeToRunThis:
+            abstr = BeliefsAndOpinions.Abstr[topic]
+            input = [
+                {"role": "user", "content": "Respond with only a digit from 0 to 10. On a scale from 0 to 9, with 0 being not at all relevant and 9 being extremely relevant, how relevant is the following text to the query, " + query + ": " + abstr}
+            ]
+            response = query_AI(input)
+            try:
+                digits = re.findall(r'\d+', response)
+                if len(digits) > 0:
+                    score = int(digits[0])
+                else:
+                    score = 9
+            except:
                 score = 9
-        except:
-            score = 9
-        #print(response + " " + str(score))
-        if score > 1:
-            ThomasContent += BeliefsAndOpinions.Full[topic]
+            #print(response + " " + str(score))
+            if score > 1:
+                full = BeliefsAndOpinions.Full[topic]
+                input = [
+                    {"role": "user",
+                     "content": "Summarize, reporting where relevant the content and academic references given in the following text. in at most 500 words what is relevant from the following text to the query, " + query + ": " + full}
+                ]
+                response = query_AI(input)
+                ThomasContent += response
     return ThomasContent

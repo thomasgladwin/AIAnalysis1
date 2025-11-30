@@ -99,9 +99,7 @@ def f_fetch():
         data = ''
     if verbose0:
         response = "Debug info: " + debug_str + ". " + response
-    if funcs.ThomAIs_on:
-        ThomAIs_onoffStr = "On"
-    else:
-        ThomAIs_onoffStr = "Off"
-    jsonResp = {'response': response}
+    if len(response) == 0:
+        response = "No response."
+    jsonResp = {"response": response}
     return jsonify(jsonResp)
