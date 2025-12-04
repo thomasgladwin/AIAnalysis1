@@ -17,6 +17,7 @@ relevantKeys = []
 
 def create_input(query, memory0=None, definitions="", data=""):
     global ThomasContent
+    global ThomAIs_on
     input = [
         {"role": "user", "content": "I am a researcher and need accurate and considerate responses."},
         {"role": "assistant", "content": "I will provide accurate amd nuanced responses, focused on being based on clear evidence and referring to any relevant theories or data."},

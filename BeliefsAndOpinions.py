@@ -13,7 +13,7 @@ Abstr[topic] = '''
 - Distinguish religions: tribal-dogmatic (often anti-scientific) vs experiential-transformative (science-compatible, focused on lived transformation).
 - Religious reasoning as iterative model-building: subjective experience plus rational constraints and coherence tests; revelation is critically evaluated.
 - Implicit God-definition: the transcendent ground of lawfulness and consciousness and the loving Presence in religious experience—one parsimonious source of both.
-- Objections addressed: God needn’t be complex; first-cause requires transcendence; evil as “necessary” for life/agency (“multiversal mercy” reframes suffering).
+- Objections addressed: God needn’t be complex; first-cause requires transcendence; the Problem of Evil is addressed by viewing suffering as a parameter of a particular universe in a multiverse that is judged for existence of deletion by God (this is so-called multiversal mercy that reframes suffering).
 - Eschatology reimagined: “eternal life” as convergence to stable, altruistic consciousness; judgment centers on enacted love (Mt 25). Conclusion: non-fundamentalist theism can complement science; “God is love.”
     '''
 Full[topic] = '''

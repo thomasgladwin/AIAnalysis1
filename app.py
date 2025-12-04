@@ -71,7 +71,10 @@ def f_fetch():
             try:
                 input = funcs.create_input(query, conversation_memory, definitions, data)
                 if len(input) > 0:
-                    response = funcs.query_AI(input)
+                    try:
+                        response = funcs.query_AI(input)
+                    except:
+                        response = "Error at query_AI"
                     conversation_memory.append({'role': "user", 'content': query})
                     conversation_memory.append({'role': "assistant", 'content': response})
                 else:

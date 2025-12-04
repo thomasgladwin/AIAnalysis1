@@ -40,6 +40,10 @@
         }).then(response => response.json()).then(json => {
             //console.log(json)
             //document.getElementById("resptext0").innerText = "Docs: " + json.response + ". Applying information...";
+        }).catch(error => {
+            document.getElementById("resptext0").innerText = "Error during query - possible timeout";
+            btn.disabled = false;
+            btn.innerText = 'Submit';
         });
         // Prepare ThomAIs (part 2) via creation of input
         document.getElementById("resptext0").innerText = "Applying information...";
@@ -50,6 +54,10 @@
         }).then(response => response.json()).then(json => {
             //console.log(json)
             document.getElementById("resptext0").innerText = "Return code: " + json.response;
+        }).catch(error => {
+            document.getElementById("resptext0").innerText = "Error during query - possible timeout";
+            btn.disabled = false;
+            btn.innerText = 'Submit';
         });
         //
         document.getElementById("resptext0").innerText = "Executing query...";
@@ -60,6 +68,10 @@
         }).then(response => response.json()).then(json => {
             //console.log(json);
             document.getElementById("resptext0").innerText = json.response;
+            btn.disabled = false;
+            btn.innerText = 'Submit';
+        }).catch(error => {
+            document.getElementById("resptext0").innerText = "Error during query - possible timeout";
             btn.disabled = false;
             btn.innerText = 'Submit';
         });
