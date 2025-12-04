@@ -14,13 +14,14 @@ ThomAIs_on = False
 guest = True
 ThomasContent = ''
 relevantKeys = []
+streaming_response = None
 
 def create_input(query, memory0=None, definitions="", data=""):
     global ThomasContent
     global ThomAIs_on
     input = [
-        {"role": "user", "content": "I am a researcher and need accurate and considerate responses."},
-        {"role": "assistant", "content": "I will provide accurate amd nuanced responses, focused on being based on clear evidence and referring to any relevant theories or data."},
+        {"role": "user", "content": "I am a researcher and need accurate and considerate responses. However, always answer quickly enough."},
+        {"role": "assistant", "content": "I will answer within 18 seconds. Given that, I will provide accurate and nuanced responses, focused on being based on clear evidence and referring to any relevant theories or data."},
     ]
     if ThomAIs_on:
         if len(ThomasContent) > 0:
@@ -47,7 +48,7 @@ def query_AI_chat(input):
         messages=input,
         max_completion_tokens=1000
     )
-    return response.choices[0].message
+    return response.choices[0].message.content
 
 def query_AI(input):
     response = client.responses.create(
@@ -55,6 +56,16 @@ def query_AI(input):
         input=input
     )
     return response.output_text
+
+def query_AI_stream(input):
+    global streaming_response
+    response = client.responses.create(
+        model="gpt-5",
+        input=input,
+        stream=True
+    )
+    streaming_response = response
+    return "Streaming started in background, waiting for completed response..."
 
 def fThomasAIs_relevanceScans(query):
     global relevantKeys
@@ -89,7 +100,7 @@ def fThomasAIs_createInput(query):
         if useQueriedSummmary:
             input = [
                 {"role": "user",
-                 "content": "Summarize, reporting where relevant the content and academic references given in the following text. in at most 500 words what is relevant from the following text to the query, " + query + ": " + full}
+                 "content": "Summarize, reporting where relevant the content and academic references given in the following text. in at most 750 words what is relevant from the following text to the query, " + query + ": " + full}
             ]
             response = query_AI(input)
             ThomasContent += response

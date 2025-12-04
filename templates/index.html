@@ -13,6 +13,7 @@
         document.getElementById("definitions").value = "Define a code as a concept that appears at multiple points in the text, where it has a similar meaning but possibly different wording; the code is labeled as the abstracted meaning of the text. A code should have a specific valence - use different codes for positive and negative attitudes towards similar concepts.";
         document.getElementById("data").value = "The following text contains interview transcripts. The symbol ### indicates where a new participant transcript begins. The participant identifier is given after the ### symbol. ### Participant 1. I like oranges, but not pears. ### Participant 2. I like apples, but not pears. ### Participant 3. I dislike apples and pears.";
         document.getElementById("query").value = "Identify codes for the responses for each participant. Using the codes for analysis, what attitudes do the participants express? Create a table with a row per participant and a column per code, and set the value of each element to 1 if the participant expressed the code and 0 otherwise.";
+        document.getElementById("ThomAIs").checked = false;
     }
 </script>
 <script>
@@ -71,10 +72,31 @@
             btn.disabled = false;
             btn.innerText = 'Submit';
         }).catch(error => {
-            document.getElementById("resptext0").innerText = "Error during query - possible timeout";
+            document.getElementById("resptext0").innerText = "Error during query - possible timeout. Please try again.";
             btn.disabled = false;
             btn.innerText = 'Submit';
         });
+        // Streaming response
+        file = "check_stream";
+        globalThis.stream_complete = false;
+        var timechecker = setTimeout(function stop_loop() {globalThis.stream_complete = true; document.getElementById("resptext0").innerText = "Query timed out - please try again.";}, 60000);
+        while (globalThis.stream_complete == false) {
+            console.log(">>> " + globalThis.stream_complete)
+            await fetch(file, {
+                method: 'POST',
+                body:data
+            }).then(response => response.json()).then(json => {
+                //console.log(json);
+                if (json["completed"] == "1") {
+                    //console.log("Completed");
+                    globalThis.stream_complete = true;
+                    document.getElementById("resptext0").innerText = json["response"];
+                    clearTimeout(timechecker);
+                }
+            }).catch(error => {
+                document.getElementById("resptext0").innerText = "Error during streaming.";
+            });
+        }
     }
 </script>
 <html>

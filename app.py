@@ -72,11 +72,11 @@ def f_fetch():
                 input = funcs.create_input(query, conversation_memory, definitions, data)
                 if len(input) > 0:
                     try:
-                        response = funcs.query_AI(input)
+                        response = funcs.query_AI_stream(input)
                     except:
                         response = "Error at query_AI"
                     conversation_memory.append({'role': "user", 'content': query})
-                    conversation_memory.append({'role': "assistant", 'content': response})
+                    # conversation_memory.append({'role': "assistant", 'content': response})
                 else:
                     response = "Error - possibly too much data for guest account."
                 query = ''
@@ -93,3 +93,20 @@ def f_fetch():
         response = "No response."
     jsonResp = {"response": response}
     return jsonify(jsonResp)
+
+@app.route('/check_stream', methods=['GET', 'POST'])
+def check_stream():
+    completed_str = "0"
+    response = "No response in stream."
+    debug_str = ''
+    try:
+        for s in funcs.streaming_response:
+            debug_str += s.type
+            if "response.output_text.done" in s.type:
+                completed_str = "1"
+                response = s.text
+                conversation_memory.append({'role': "assistant", 'content': response})
+    except:
+        response = "Stream not ready"
+    jsonResp = {"response": response, "completed": completed_str}
+    return jsonResp
