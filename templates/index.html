@@ -81,7 +81,7 @@
         globalThis.stream_complete = false;
         var timechecker = setTimeout(function stop_loop() {globalThis.stream_complete = true; document.getElementById("resptext0").innerText = "Query timed out - please try again.";}, 60000);
         while (globalThis.stream_complete == false) {
-            console.log(">>> " + globalThis.stream_complete)
+            //console.log(">>> " + globalThis.stream_complete)
             await fetch(file, {
                 method: 'POST',
                 body:data
