@@ -115,7 +115,7 @@ def check_stream():
                 response = funcs.streaming_str
                 break
     except:
-        response = "Waiting for response stream..."
+        response = ""
     # response += debug_str
     jsonResp = {"response": response, "completed": completed_str}
     return jsonResp
