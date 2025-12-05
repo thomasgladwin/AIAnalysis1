@@ -15,6 +15,7 @@ guest = True
 ThomasContent = ''
 relevantKeys = []
 streaming_response = None
+streaming_str = ''
 
 def create_input(query, memory0=None, definitions="", data=""):
     global ThomasContent
@@ -59,13 +60,15 @@ def query_AI(input):
 
 def query_AI_stream(input):
     global streaming_response
+    global streaming_str
+    streaming_str = ''
     response = client.responses.create(
         model="gpt-5",
         input=input,
         stream=True
     )
     streaming_response = response
-    return "Streaming started in background, waiting for completed response..."
+    return "Streaming initiated..."
 
 def fThomasAIs_relevanceScans(query):
     global relevantKeys

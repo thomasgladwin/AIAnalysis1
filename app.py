@@ -100,13 +100,22 @@ def check_stream():
     response = "No response in stream."
     debug_str = ''
     try:
+        n_tokens = 10
         for s in funcs.streaming_response:
             debug_str += s.type
             if "response.output_text.done" in s.type:
                 completed_str = "1"
                 response = s.text
                 conversation_memory.append({'role': "assistant", 'content': response})
+                break
+            if hasattr(s, 'delta'):
+                funcs.streaming_str += s.delta
+            n_tokens -= 1
+            if n_tokens <= 0:
+                response = funcs.streaming_str
+                break
     except:
-        response = "Stream not ready"
+        response = "Waiting for response stream..."
+    # response += debug_str
     jsonResp = {"response": response, "completed": completed_str}
     return jsonResp
