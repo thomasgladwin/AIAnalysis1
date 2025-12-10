@@ -13,7 +13,7 @@
         document.getElementById("definitions").value = "Define a code as a concept that appears at multiple points in the text, where it has a similar meaning but possibly different wording; the code is labeled as the abstracted meaning of the text. A code should have a specific valence - use different codes for positive and negative attitudes towards similar concepts.";
         document.getElementById("data").value = "The following text contains interview transcripts. The symbol ### indicates where a new participant transcript begins. The participant identifier is given after the ### symbol. ### Participant 1. I like oranges, but not pears. ### Participant 2. I like apples, but not pears. ### Participant 3. I dislike apples and pears.";
         document.getElementById("query").value = "Identify codes for the responses for each participant. Using the codes for analysis, what attitudes do the participants express? Create a table with a row per participant and a column per code, and set the value of each element to 1 if the participant expressed the code and 0 otherwise.";
-        document.getElementById("Forget").checked = true;
+        document.getElementById("Forget").checked = false;
         document.getElementById("ThomAIs").checked = false;
     }
 </script>
@@ -33,34 +33,26 @@
         if (document.getElementById("ThomAIs").checked) {
             data.append('ThomAIs', '1');
         }
-        // Prepare ThomAIs (part 1) via relevance-scans
+        // Prepare ThomAIs content via relevance-scans
         document.getElementById("resptext0").innerText = "Relevance-scanning...";
-        let file = "relevanceScans";
-        await fetch(file, {
-            method: 'POST',
-            body:data
-        }).then(response => response.json()).then(json => {
-            //console.log(json)
-            //document.getElementById("resptext0").innerText = "Docs: " + json.response + ". Applying information...";
-        }).catch(error => {
-            document.getElementById("resptext0").innerText = "Error during query - possible timeout";
-            btn.disabled = false;
-            btn.innerText = 'Submit';
-        });
-        // Prepare ThomAIs (part 2) via creation of input
-        document.getElementById("resptext0").innerText = "Applying information...";
-        file = "setThomasContent";
-        await fetch(file, {
-            method: 'POST',
-            body:data
-        }).then(response => response.json()).then(json => {
-            //console.log(json)
-            document.getElementById("resptext0").innerText = "Return code: " + json.response;
-        }).catch(error => {
-            document.getElementById("resptext0").innerText = "Error during query - possible timeout";
-            btn.disabled = false;
-            btn.innerText = 'Submit';
-        });
+        rel_scan_done = false;
+        let file = "relevanceScansLoop";
+        while (rel_scan_done == false) {
+            await fetch(file, {
+                method: 'POST',
+                body:data
+            }).then(response => response.json()).then(json => {
+                //console.log(json)
+                if (json.response == "1") {
+                    rel_scan_done = true;
+                }
+                document.getElementById("resptext0").innerText = "Doc[" + json.rel_id + "] checked. Score: " + json.score;
+            }).catch(error => {
+                document.getElementById("resptext0").innerText = "Error during relevance scan query - possible timeout";
+                btn.disabled = false;
+                btn.innerText = 'Submit';
+            });
+        }
         // Initiate query
         document.getElementById("resptext0").innerText = "Initiating query...";
         file = "fetch_info";
@@ -92,15 +84,18 @@
                 if (json["completed"] == "1") {
                     //console.log("Completed");
                     globalThis.stream_complete = true;
+                    document.getElementById("resptext0").style.color = 'black';
                     document.getElementById("resptext0").innerText = json["response"];
                     clearTimeout(timechecker);
                 } else {
                     if (json["response"].length > 0) {
+                        document.getElementById("resptext0").style.color = 'gray';
                         document.getElementById("resptext0").innerText = json["response"];
                     }
                 }
             }).catch(error => {
-                document.getElementById("resptext0").innerText = "Error during streaming.";
+                document.getElementById("resptext0").style.color = 'red';
+                document.getElementById("resptext0").innerText = "Error during streaming. Please try again.";
             });
             // delay
             function fDelay(ms) {
@@ -119,7 +114,7 @@
             <details>
                 <summary>Information</summary>
                 <div style="padding: 1%; padding-left: 2%;  background-color: LightGray; border-style: solid; width:auto;">
-                    <p><a href="https://www.tegladwin.com/">tegladwin.com</a>.
+                    <p><a href="https://www.tegladwin.com/apps.php#ThomAIs">tegladwin.com</a>.
                     <br>More information on <a href="https://github.com/thomasgladwin/AIAnalysis1">GitHub</a> repository.
                     <br><button id='btnExample' onclick='loadExample()'>Load example</button>
                     <p>
@@ -138,7 +133,7 @@
                     </details>
                 <h1>Query</h1>
                 <textarea rows=3 cols=80 id="query" style="width: 80%;">{{ query }}</textarea>
-                <p><input type="checkbox" id="Forget" name="Forget" value="valForget" checked>Forget prior conversation</p>
+                <p><input type="checkbox" id="Forget" name="Forget" value="valForget">Forget prior conversation</p>
                 <p><input type="checkbox" id="ThomAIs" name="ThomAIs" value="valThomAIs" checked>ThomAIs mode</p>
                 <p><button id='btn'>Submit</button></p>
             </form>

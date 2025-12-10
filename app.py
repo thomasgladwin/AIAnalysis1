@@ -96,8 +96,9 @@ def f_fetch():
 
 @app.route('/check_stream', methods=['GET', 'POST'])
 def check_stream():
+    global conversation_memory
     completed_str = "0"
-    response = "No response in stream."
+    response = ""
     debug_str = ''
     try:
         n_tokens = 10
@@ -118,4 +119,24 @@ def check_stream():
         response = ""
     # response += debug_str
     jsonResp = {"response": response, "completed": completed_str}
+    return jsonResp
+
+@app.route('/relevanceScansLoop', methods=['GET', 'POST'])
+def relevanceScansLoop():
+    if 'ThomAIs' not in request.form:
+        jsonResp = {"response": "1", "rel_id": "-1", "score": "-1"}
+        return jsonResp
+    if request.form["ThomAIs"] != '1':
+        jsonResp = {"response": "1", "rel_id": "-1", "score": "-1"}
+        return jsonResp
+    query = request.form['query']
+    if funcs.rel_id >= len(funcs.BeliefsAndOpinions.Abstr):
+        funcs.fThomasAIs_createInput(query)
+        funcs.relevanceScans_init()
+        score = 0
+        response = "1"
+    else:
+        score = funcs.relevanceScans_iter(query)
+        response = "0"
+    jsonResp = {"response": response, "rel_id": str(funcs.rel_id - 1), "score": str(score)}
     return jsonResp
