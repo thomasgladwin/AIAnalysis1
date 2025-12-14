@@ -19,6 +19,9 @@
 </script>
 <script>
     async function callAI() {
+        function fDelay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
         document.getElementById("resptext0").style.color = 'black';
         var btn = document.getElementById('btn');
         btn.disabled = true;
@@ -28,16 +31,42 @@
         data.append('query', document.getElementById("query").value);
         data.append('definitions', document.getElementById("definitions").value);
         data.append('data', document.getElementById("data").value);
+        data.append('accesscode', document.getElementById("AccessCode").value);
         if (document.getElementById("Forget").checked) {
             data.append('Forget', '1');
         }
         if (document.getElementById("ThomAIs").checked) {
             data.append('ThomAIs', '1');
         }
+        // Check whether already in use
+        let file_queue = "check_queue";
+        queue_check = true;
+        while (queue_check == true) {
+            await fetch(file_queue, {
+                method: 'POST',
+                body:data
+            }).then(response => response.json()).then(json => {
+                console.log(json)
+                if (json.response == "1") {
+                    queue_check = true;
+                } else {
+                    queue_check = false;
+                }
+                document.getElementById("resptext0").innerText = "Guest access: Queuing...";
+            }).catch(error => {
+                document.getElementById("resptext0").innerText = "Error during queue check";
+                btn.disabled = false;
+                btn.innerText = 'Submit';
+            });
+            await fDelay(1000)
+        }
+        // Set in-use
+        let file = "setInUse";
+        await fetch(file, {method: 'POST', body:data});
         // Prepare ThomAIs content via relevance-scans
         document.getElementById("resptext0").innerText = "Relevance-scanning...";
         rel_scan_done = false;
-        let file = "relevanceScansLoop";
+        file = "relevanceScansLoop";
         while (rel_scan_done == false) {
             await fetch(file, {
                 method: 'POST',
@@ -99,11 +128,11 @@
                 document.getElementById("resptext0").innerText = "Error during streaming. Please try again.";
             });
             // delay
-            function fDelay(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
             await fDelay(1000)
         }
+        // Set not in-use
+        file = "setNotInUse";
+        await fetch(file, {method: 'POST', body:data});
     }
 </script>
 <html>
@@ -115,12 +144,13 @@
             <details>
                 <summary>Information</summary>
                 <div style="padding: 1%; padding-left: 2%; padding-right:2%; background-color: LightGray; border-style: solid; width:fit-content;">
-                    <a href="https://www.tegladwin.com/apps.php#ThomAIs">tegladwin.com</a>.
+                    Main website: <a href="https://www.tegladwin.com/apps.php#ThomAIs">tegladwin.com</a>.
                     Github <a href="https://github.com/thomasgladwin/AIAnalysis1">repository</a>.
                     <button id='btnExample' onclick='loadExample()'>Load example</button>
                 </div>
             </details>
             <form action="index" method="POST" onsubmit='event.preventDefault(); callAI()'>
+                <p>Access code: <input type="password" id="AccessCode" name="AccessCode"> (guest mode may require queueing)</p>
                 <details id="QueryContextDetails">
                     <summary>Add query context</summary>
                     <div style="padding: 1%; padding-left: 2%; padding-right:2%; background-color: LightGray; border-style: solid; width: 90%;">

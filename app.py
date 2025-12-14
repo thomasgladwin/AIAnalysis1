@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, jsonify
 import funcs
+import time
 
 app = Flask(__name__)
 
 conversation_memory = []
 verbose0 = False
+queue_fn = "streaming.txt"
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -139,4 +141,48 @@ def relevanceScansLoop():
         score = funcs.relevanceScans_iter(query)
         response = "0"
     jsonResp = {"response": response, "rel_id": str(funcs.rel_id - 1), "score": str(score)}
+    return jsonResp
+
+@app.route('/setInUse', methods=['GET', 'POST'])
+def setInUse():
+    try:
+        with open(queue_fn, "a") as text_file:
+            current_timestamp = time.time()
+            text_file.writelines([str(current_timestamp) + "\n"])
+    except:
+        pass
+    return ""
+
+@app.route('/setNotInUse', methods=['GET', 'POST'])
+def setNotInUse():
+    try:
+        with open(queue_fn, "a") as text_file:
+            text_file.writelines(["0\n"])
+    except:
+        pass
+    return ""
+
+@app.route('/check_queue', methods=['GET', 'POST'])
+def check_queue():
+    if request.form["accesscode"] in funcs.AccessCodes:
+        status = "0"
+    else:
+        status = "0"
+        try:
+            with open(queue_fn, "r") as text_file:
+                status = text_file.readlines()
+                if len(status) == 0:
+                    status = "0"
+                else:
+                    status = status[-1].strip()
+                    if status != "0":
+                        last_timestamp = float(status)
+                        current_timestamp = time.time()
+                        if (current_timestamp - last_timestamp) > 30:
+                            status = "0"
+                        else:
+                            status = "1"
+        except:
+            pass
+    jsonResp = {"response": status[-1], "access": request.form["accesscode"]}
     return jsonResp
