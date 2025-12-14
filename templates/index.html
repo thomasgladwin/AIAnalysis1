@@ -19,6 +19,7 @@
 </script>
 <script>
     async function callAI() {
+        let this_ID = (1 + Math.random()).toString(36);
         function fDelay(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
@@ -32,6 +33,7 @@
         data.append('definitions', document.getElementById("definitions").value);
         data.append('data', document.getElementById("data").value);
         data.append('accesscode', document.getElementById("AccessCode").value);
+        data.append('ID', this_ID);
         if (document.getElementById("Forget").checked) {
             data.append('Forget', '1');
         }
@@ -54,14 +56,15 @@
                 }
                 document.getElementById("resptext0").innerText = "Guest access: Queuing...";
             }).catch(error => {
-                document.getElementById("resptext0").innerText = "Error during queue check";
-                btn.disabled = false;
-                btn.innerText = 'Submit';
+                console.log(error)
+                //document.getElementById("resptext0").innerText = "Error during queue check";
+                //btn.disabled = false;
+                //btn.innerText = 'Submit';
             });
             await fDelay(1000)
         }
-        // Set in-use
-        let file = "setInUse";
+        // Init
+        let file = "init";
         await fetch(file, {method: 'POST', body:data});
         // Prepare ThomAIs content via relevance-scans
         document.getElementById("resptext0").innerText = "Relevance-scanning...";
@@ -72,13 +75,14 @@
                 method: 'POST',
                 body:data
             }).then(response => response.json()).then(json => {
-                //console.log(json)
+                console.log(json)
                 if (json.response == "1") {
                     rel_scan_done = true;
                 }
                 document.getElementById("resptext0").innerText = "Doc[" + json.rel_id + "] checked. Score: " + json.score;
             }).catch(error => {
-                document.getElementById("resptext0").innerText = "Error during relevance scan query - possible timeout";
+                //console.log("Error: ")
+                //document.getElementById("resptext0").innerText = "Error during relevance scan query - possible timeout";
                 btn.disabled = false;
                 btn.innerText = 'Submit';
             });
@@ -91,11 +95,11 @@
             body:data
         }).then(response => response.json()).then(json => {
             //console.log(json);
-            document.getElementById("resptext0").innerText = json.response;
-            btn.disabled = false;
-            btn.innerText = 'Submit';
+            //document.getElementById("resptext0").innerText = json.response;
+            //btn.disabled = false;
+            //btn.innerText = 'Submit';
         }).catch(error => {
-            document.getElementById("resptext0").innerText = "Error during query - possible timeout. Please try again.";
+            //document.getElementById("resptext0").innerText = "Error during query: " + error;
             btn.disabled = false;
             btn.innerText = 'Submit';
         });
@@ -110,12 +114,14 @@
                 method: 'POST',
                 body:data
             }).then(response => response.json()).then(json => {
-                //console.log(json);
+                console.log(json);
                 if (json["completed"] == "1") {
-                    //console.log("Completed");
+                    console.log("Completed");
                     globalThis.stream_complete = true;
                     document.getElementById("resptext0").style.color = 'black';
                     document.getElementById("resptext0").innerText = json["response"];
+                    btn.disabled = false;
+                    btn.innerText = 'Submit';
                     clearTimeout(timechecker);
                 } else {
                     if (json["response"].length > 0) {
@@ -124,14 +130,16 @@
                     }
                 }
             }).catch(error => {
-                document.getElementById("resptext0").style.color = 'red';
-                document.getElementById("resptext0").innerText = "Error during streaming. Please try again.";
+                //document.getElementById("resptext0").style.color = 'red';
+                //document.getElementById("resptext0").innerText = "Error during streaming: " + error;
             });
             // delay
             await fDelay(1000)
         }
-        // Set not in-use
-        file = "setNotInUse";
+        // Cleanup
+        btn.disabled = false;
+        btn.innerText = 'Submit';
+        file = "cleanup";
         await fetch(file, {method: 'POST', body:data});
     }
 </script>

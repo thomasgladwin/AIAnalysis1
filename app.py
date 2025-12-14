@@ -1,20 +1,36 @@
 from flask import Flask, render_template, request, jsonify
-import funcs
+import funcs as funcsLib
 import time
 
 app = Flask(__name__)
 
-conversation_memory = []
 verbose0 = False
 queue_fn = "streaming.txt"
+interface_list = {}
+timeout_queue = 120
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
 
+@app.route('/init', methods=['GET', 'POST'])
+def init():
+    ID = request.form["ID"]
+    interface_list[ID] = funcsLib.AIInterface()
+    setInUse()
+    return ""
+
+@app.route('/cleanup', methods=['GET', 'POST'])
+def cleanup():
+    ID = request.form["ID"]
+    interface_list.pop(ID, None)
+    setNotInUse()
+    return ""
+
 @app.route('/relevanceScans', methods=['GET', 'POST'])
 def relevanceScans():
+    funcs = interface_list[request.form["ID"]]
     response = 'Not executed (mode)'
     if 'ThomAIs' in request.form:
         if request.form["ThomAIs"] == '1':
@@ -26,12 +42,15 @@ def relevanceScans():
                         response = str(response_list)
                     except:
                         response = "Not executed (query)"
+    if len(response) == 0:
+        response = " "
     jsonResp = {"response": response}
     return jsonify(jsonResp)
 
 @app.route('/setThomasContent', methods=['GET', 'POST'])
 def setThomasContent():
-    response = ''
+    funcs = interface_list[request.form["ID"]]
+    response = ' '
     if 'ThomAIs' in request.form:
         if request.form["ThomAIs"] == '1':
             if 'query' in request.form:
@@ -42,18 +61,20 @@ def setThomasContent():
                         response = "1"
                     except:
                         response = "0"
+    if len(response) == 0:
+        response = " "
     jsonResp = {"response": response}
     return jsonify(jsonResp)
 
 @app.route('/fetch_info', methods=['GET', 'POST'])
 def f_fetch():
-    global conversation_memory
+    funcs = interface_list[request.form["ID"]]
     debug_str = ''
     query = ''
     if 'Forget' in request.form:
         if request.form["Forget"] == '1':
             debug_str = debug_str + 'Memory wiped. '
-            conversation_memory = []
+            funcs.conversation_memory = None
     funcs.ThomAIs_on = False
     if 'ThomAIs' in request.form:
         if request.form["ThomAIs"] == '1':
@@ -71,14 +92,14 @@ def f_fetch():
             response = "No query."
         else:
             try:
-                input = funcs.create_input(query, conversation_memory, definitions, data)
+                input = funcs.create_input(query, definitions, data)
                 if len(input) > 0:
                     try:
                         response = funcs.query_AI_stream(input)
                     except:
                         response = "Error at query_AI"
-                    conversation_memory.append({'role': "user", 'content': query})
-                    # conversation_memory.append({'role': "assistant", 'content': response})
+                    funcs.conversation_memory.append({'role': "user", 'content': query})
+                    # funcs.conversation_memory.append({'role': "assistant", 'content': response})
                 else:
                     response = "Error - possibly too much data for guest account."
                 query = ''
@@ -98,18 +119,18 @@ def f_fetch():
 
 @app.route('/check_stream', methods=['GET', 'POST'])
 def check_stream():
-    global conversation_memory
     completed_str = "0"
     response = ""
     debug_str = ''
     try:
+        funcs = interface_list[request.form["ID"]]
         n_tokens = 10
         for s in funcs.streaming_response:
             debug_str += s.type
             if "response.output_text.done" in s.type:
                 completed_str = "1"
                 response = s.text
-                conversation_memory.append({'role': "assistant", 'content': response})
+                funcs.conversation_memory.append({'role': "assistant", 'content': response})
                 break
             if hasattr(s, 'delta'):
                 funcs.streaming_str += s.delta
@@ -118,13 +139,14 @@ def check_stream():
                 response = funcs.streaming_str
                 break
     except:
-        response = ""
-    # response += debug_str
+        pass
+    #response += debug_str
     jsonResp = {"response": response, "completed": completed_str}
     return jsonResp
 
 @app.route('/relevanceScansLoop', methods=['GET', 'POST'])
 def relevanceScansLoop():
+    funcs = interface_list[request.form["ID"]]
     if 'ThomAIs' not in request.form:
         jsonResp = {"response": "1", "rel_id": "-1", "score": "-1"}
         return jsonResp
@@ -132,18 +154,17 @@ def relevanceScansLoop():
         jsonResp = {"response": "1", "rel_id": "-1", "score": "-1"}
         return jsonResp
     query = request.form['query']
-    if funcs.rel_id >= len(funcs.BeliefsAndOpinions.Abstr):
+    if funcs.rel_id >= len(funcsLib.BeliefsAndOpinions.Abstr):
         funcs.fThomasAIs_createInput(query)
         funcs.relevanceScans_init()
-        score = 0
+        score = "0"
         response = "1"
     else:
         score = funcs.relevanceScans_iter(query)
         response = "0"
-    jsonResp = {"response": response, "rel_id": str(funcs.rel_id - 1), "score": str(score)}
+    jsonResp = {"response": response, "rel_id": str(funcs.rel_id - 1), "score": score}
     return jsonResp
 
-@app.route('/setInUse', methods=['GET', 'POST'])
 def setInUse():
     try:
         with open(queue_fn, "a") as text_file:
@@ -153,7 +174,6 @@ def setInUse():
         pass
     return ""
 
-@app.route('/setNotInUse', methods=['GET', 'POST'])
 def setNotInUse():
     try:
         with open(queue_fn, "a") as text_file:
@@ -164,7 +184,7 @@ def setNotInUse():
 
 @app.route('/check_queue', methods=['GET', 'POST'])
 def check_queue():
-    if request.form["accesscode"] in funcs.AccessCodes:
+    if request.form["accesscode"] in funcsLib.AccessCodes:
         status = "0"
     else:
         status = "0"
@@ -178,11 +198,13 @@ def check_queue():
                     if status != "0":
                         last_timestamp = float(status)
                         current_timestamp = time.time()
-                        if (current_timestamp - last_timestamp) > 30:
+                        if (current_timestamp - last_timestamp) > timeout_queue:
                             status = "0"
                         else:
                             status = "1"
         except:
-            pass
-    jsonResp = {"response": status[-1], "access": request.form["accesscode"]}
+            status = "0"
+    if len(status) == 0:
+        status = " "
+    jsonResp = {"response": status}
     return jsonResp
